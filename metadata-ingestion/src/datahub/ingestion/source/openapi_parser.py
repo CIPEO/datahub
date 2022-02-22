@@ -108,7 +108,7 @@ def check_sw_version(sw_dict: dict) -> None:
         )
 
 
-def get_endpoints(sw_dict: dict) -> dict:  # noqa: C901
+def get_endpoints(sw_dict: dict, endpoints2ignore: list) -> dict:  # noqa: C901
     """
     Get all the URLs accepting the "GET" method, together with their description and the tags
     """
@@ -117,13 +117,20 @@ def get_endpoints(sw_dict: dict) -> dict:  # noqa: C901
     check_sw_version(sw_dict)
 
     for p_k, p_o in sw_dict["paths"].items():
+        if p_k in endpoints2ignore or p_k[1:] in endpoints2ignore:
+            continue
         # will track only the "get" methods, which are the ones that give us data
         if "get" in p_o.keys():
 
-            try:
+            if "200" in p_o["get"]["responses"]:
                 base_res = p_o["get"]["responses"]["200"]
-            except KeyError:  # if you read a plain yml file the 200 will be an integer
+            elif 200 in p_o["get"]["responses"]:
                 base_res = p_o["get"]["responses"][200]
+            else:
+                warnings.warn(
+                    f"Field in swagger file does not give consistent data --- {p_k}"
+                )
+                continue
 
             if "description" in p_o["get"].keys():
                 desc = p_o["get"]["description"]

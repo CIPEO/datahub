@@ -165,7 +165,9 @@ class APISource(Source, ABC):
 
         # Getting all the URLs accepting the "GET" method
         with warnings.catch_warnings(record=True) as warn_c:
-            url_endpoints = get_endpoints(sw_dict)
+            url_endpoints = get_endpoints(
+                sw_dict, endpoints2ignore=config.ignore_endpoints
+            )
 
             for w in warn_c:
                 w_msg = w.message
